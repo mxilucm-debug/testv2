@@ -29,17 +29,7 @@ async function main() {
 
   // Create demo users
   const users = [
-    {
-      id: 'cmepn2wo4000vptfyqbh6cqsj',
-      email: 'employee@techcorp.com',
-      password: 'employee123',
-      name: 'Mike Employee',
-      employeeId: 'EMP001',
-      workspaceId: workspace.id,
-      role: 'EMPLOYEE',
-      employmentStatus: 'ACTIVE',
-      dateOfJoining: new Date('2023-01-01'),
-    },
+    // TechCorp users - Manager first
     {
       id: 'cmepn2wo4000wptfyqbh6cqsk',
       email: 'manager@techcorp.com',
@@ -50,6 +40,18 @@ async function main() {
       role: 'MANAGER',
       employmentStatus: 'ACTIVE',
       dateOfJoining: new Date('2022-06-15'),
+    },
+    {
+      id: 'cmepn2wo4000vptfyqbh6cqsj',
+      email: 'employee@techcorp.com',
+      password: 'employee123',
+      name: 'Mike Employee',
+      employeeId: 'EMP001',
+      workspaceId: workspace.id,
+      role: 'EMPLOYEE',
+      employmentStatus: 'ACTIVE',
+      dateOfJoining: new Date('2023-01-01'),
+      reportingManagerId: 'cmepn2wo4000wptfyqbh6cqsk',
     },
     {
       id: 'cmepn2wo4000xptfyqbh6cqsl',
@@ -73,18 +75,7 @@ async function main() {
       employmentStatus: 'ACTIVE',
       dateOfJoining: new Date('2021-01-01'),
     },
-    // StartupXYZ users
-    {
-      id: 'cmepn2wo4000zptfyqbh6cqsn',
-      email: 'employee@startupxyz.com',
-      password: 'employee123',
-      name: 'Lisa Employee',
-      employeeId: 'EMP002',
-      workspaceId: workspace2.id,
-      role: 'EMPLOYEE',
-      employmentStatus: 'ACTIVE',
-      dateOfJoining: new Date('2023-03-15'),
-    },
+    // StartupXYZ users - Manager first
     {
       id: 'cmepn2wo40010ptfyqbh6cqso',
       email: 'manager@startupxyz.com',
@@ -95,6 +86,18 @@ async function main() {
       role: 'MANAGER',
       employmentStatus: 'ACTIVE',
       dateOfJoining: new Date('2022-09-20'),
+    },
+    {
+      id: 'cmepn2wo4000zptfyqbh6cqsn',
+      email: 'employee@startupxyz.com',
+      password: 'employee123',
+      name: 'Lisa Employee',
+      employeeId: 'EMP002',
+      workspaceId: workspace2.id,
+      role: 'EMPLOYEE',
+      employmentStatus: 'ACTIVE',
+      dateOfJoining: new Date('2023-03-15'),
+      reportingManagerId: 'cmepn2wo40010ptfyqbh6cqso',
     },
     {
       id: 'cmepn2wo40011ptfyqbh6cqsp',

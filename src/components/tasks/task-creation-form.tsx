@@ -69,7 +69,11 @@ export function TaskCreationForm({ onTaskCreated }: { onTaskCreated: () => void 
 
   const fetchUsers = async () => {
     try {
-      const response = await fetch(`/api/users?workspaceId=${workspaceId}`)
+      let url = `/api/users?workspaceId=${workspaceId}`
+      if (currentUserRole === 'MANAGER') {
+        url += `&managerId=${currentUserId}`
+      }
+      const response = await fetch(url)
       const result = await response.json()
       
       if (result.success) {
