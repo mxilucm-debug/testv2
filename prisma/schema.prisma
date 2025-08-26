@@ -1,0 +1,431 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+// Core Models for HRMS System
+
+enum UserRole {
+  SUPER_ADMIN
+  ADMIN
+  MANAGER
+  EMPLOYEE
+}
+
+enum EmploymentType {
+  PERMANENT
+  CONTRACT
+  INTERNSHIP
+  PROBATION
+  PART_TIME
+}
+
+enum EmploymentStatus {
+  ACTIVE
+  INACTIVE
+  ON_LEAVE
+  TERMINATED
+  RESIGNED
+}
+
+enum Gender {
+  MALE
+  FEMALE
+  OTHER
+  PREFER_NOT_TO_SAY
+}
+
+enum MaritalStatus {
+  SINGLE
+  MARRIED
+  DIVORCED
+  WIDOWED
+}
+
+// Workspace for multi-tenancy
+model Workspace {
+  id                  String   @id @default(cuid())
+  name                String
+  logo                String?
+  notificationEmail   String
+  notificationPhone   String?
+  notificationProvider String  @default("email") // email, whatsapp, push
+  workingDays         String   @default("1,2,3,4,5") // Mon-Fri
+  isActive            Boolean  @default(true)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  users               User[]
+  departments         Department[]
+  designations        Designation[]
+  shifts              Shift[]
+  leaveTypes          LeaveType[]
+  holidays            Holiday[]
+  documents           Document[]
+
+  @@map("workspaces")
+}
+
+// User model with comprehensive profile fields
+model User {
+  id                    String           @id @default(cuid())
+  email                 String           @unique
+  employeeId            String?          @unique
+  password              String
+  name                  String
+  profileImage          String?
+  dateOfBirth           DateTime?
+  gender                Gender?
+  maritalStatus         MaritalStatus?
+  nationality           String?
+  contactNumber         String?
+  emergencyContactName  String?
+  emergencyContactRelationship String?
+  emergencyContactNumber String?
+  currentAddress        String?
+  permanentAddress      String?
+  role                  UserRole         @default(EMPLOYEE)
+  workspaceId           String
+  departmentId          String?
+  designationId         String?
+  reportingManagerId    String?
+  workLocation          String?
+  employmentType        EmploymentType?
+  employmentStatus      EmploymentStatus  @default(ACTIVE)
+  dateOfJoining         DateTime?
+  confirmationDate      DateTime?
+  lastWorkingDay       DateTime?
+  isActive              Boolean          @default(true)
+  isEmailVerified       Boolean          @default(false)
+  isPhoneVerified       Boolean          @default(false)
+  forcePasswordReset    Boolean          @default(true)
+  createdAt             DateTime         @default(now())
+  updatedAt             DateTime         @updatedAt
+
+  // Relations
+  workspace             Workspace         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  department            Department?       @relation(fields: [departmentId], references: [id])
+  designation           Designation?      @relation(fields: [designationId], references: [id])
+  reportingManager      User?            @relation("ManagerReports", fields: [reportingManagerId], references: [id])
+  reportees             User[]           @relation("ManagerReports")
+  statutoryInfo         StatutoryInfo?
+  payrollInfo           PayrollInfo?
+  educationalBackground EducationalBackground[]
+  previousEmployment    PreviousEmployment[]
+  documents             Document[]
+  attendanceRecords     AttendanceRecord[]
+  leaveRequests         LeaveRequest[]
+  assignedTasks         Task[]           @relation("AssignedTasks")
+  createdTasks          Task[]           @relation("CreatedTasks")
+  taskSubmissions       TaskSubmission[]
+  appeals               Appeal[]
+
+  @@map("users")
+}
+
+// Department model
+model Department {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  workspaceId String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  users       User[]
+
+  @@unique([name, workspaceId])
+  @@map("departments")
+}
+
+// Designation model
+model Designation {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  workspaceId String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  users       User[]
+
+  @@unique([name, workspaceId])
+  @@map("designations")
+}
+
+// Statutory & Compliance Information (India-Specific)
+model StatutoryInfo {
+  id           String   @id @default(cuid())
+  userId       String   @unique
+  pan          String?  @unique
+  aadhaar      String?  @unique
+  uan          String?
+  epfNumber    String?
+  esiNumber    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("statutory_info")
+}
+
+// Payroll & Compensation Information
+model PayrollInfo {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  bankAccount     String?
+  bankIfsc        String?
+  bankName        String?
+  taxRegime       String?  @default("old") // old, new
+  basicSalary     Float?
+  hra             Float?
+  otherAllowances Float?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("payroll_info")
+}
+
+// Educational Background
+model EducationalBackground {
+  id          String   @id @default(cuid())
+  userId      String
+  degree      String?
+  institution String?
+  university  String?
+  yearOfPassing Int?
+  percentage  Float?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("educational_background")
+}
+
+// Previous Employment
+model PreviousEmployment {
+  id           String   @id @default(cuid())
+  userId       String
+  companyName  String?
+  position     String?
+  duration     String?  // e.g., "2 years 3 months"
+  startDate    DateTime?
+  endDate      DateTime?
+  reasonForLeaving String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("previous_employment")
+}
+
+// Document Management
+model Document {
+  id          String   @id @default(cuid())
+  name        String
+  type        String   // pan, aadhaar, contract, offer_letter, etc.
+  fileUrl     String
+  fileSize    Int?
+  mimeType    String?
+  userId      String?
+  workspaceId String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@map("documents")
+}
+
+// Shift Management
+model Shift {
+  id          String   @id @default(cuid())
+  name        String
+  startTime   String   // HH:mm format
+  endTime     String   // HH:mm format
+  breakTime   Int?     // minutes
+  gracePeriod Int?     // minutes for late arrival
+  workspaceId String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([name, workspaceId])
+  @@map("shifts")
+}
+
+// Leave Types
+model LeaveType {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  daysAllowed Int?
+  isPaid      Boolean  @default(true)
+  workspaceId String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  leaveRequests LeaveRequest[]
+
+  @@unique([name, workspaceId])
+  @@map("leave_types")
+}
+
+// Holidays
+model Holiday {
+  id          String   @id @default(cuid())
+  name        String
+  date        DateTime
+  isRecurring Boolean  @default(false)
+  workspaceId String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([name, date, workspaceId])
+  @@map("holidays")
+}
+
+// Attendance Records (for future implementation)
+model AttendanceRecord {
+  id           String   @id @default(cuid())
+  userId       String
+  punchInTime  DateTime?
+  punchOutTime DateTime?
+  punchInLocation String? // JSON string with lat, lng
+  punchOutLocation String?
+  punchInSelfie String?
+  punchOutSelfie String?
+  shiftId      String?
+  status       String   @default("present") // present, absent, late, half_day
+  totalHours   Float?
+  remarks      String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("attendance_records")
+}
+
+// Leave Requests (for future implementation)
+model LeaveRequest {
+  id          String   @id @default(cuid())
+  userId      String
+  leaveTypeId String
+  startDate   DateTime
+  endDate     DateTime
+  reason      String?
+  attachment  String?
+  status      String   @default("pending") // pending, approved, rejected
+  approvedBy  String?
+  approvedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  leaveType   LeaveType @relation(fields: [leaveTypeId], references: [id])
+
+  @@map("leave_requests")
+}
+
+// Task Management (for future implementation)
+enum TaskStatus {
+  OPEN
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CANCELLED
+}
+
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+model Task {
+  id             String      @id @default(cuid())
+  title          String
+  description    String?
+  objectives     String?
+  startDate      DateTime
+  endDate        DateTime?
+  assignedTo     String      // userId
+  assignedBy     String      // userId
+  assignedRole   UserRole    // Manager | Employee
+  createdBy      String      // userId
+  createdRole    UserRole    // Admin | Manager | Employee
+  status         TaskStatus  @default(OPEN)
+  priority       TaskPriority @default(MEDIUM)
+  dueAt          DateTime?
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  assignee       User        @relation("AssignedTasks", fields: [assignedTo], references: [id], onDelete: Cascade)
+  creator        User        @relation("CreatedTasks", fields: [createdBy], references: [id], onDelete: Cascade)
+  submission     TaskSubmission?
+
+  @@map("tasks")
+}
+
+model TaskSubmission {
+  id          String   @id @default(cuid())
+  taskId      String   @unique
+  userId      String
+  report      String?
+  fileUrl     String?
+  submittedAt DateTime @default(now())
+  basePoints  Int      @default(0)
+  qualityPoints Int    @default(0)
+  bonusPoints Int      @default(0)
+  remarks     String?
+  status      String   @default("pending_review") // pending_review, approved, rejected
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  task        Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  appeal      Appeal?
+
+  @@map("task_submissions")
+}
+
+model Appeal {
+  id          String   @id @default(cuid())
+  taskSubmissionId String @unique
+  userId      String
+  reason      String?
+  attachment  String?
+  status      String   @default("pending") // pending, approved, rejected
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  submission  TaskSubmission @relation(fields: [taskSubmissionId], references: [id], onDelete: Cascade)
+
+  @@map("appeals")
+}
