@@ -23,6 +23,7 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url)
     const workspaceId = searchParams.get('workspaceId')
     const role = searchParams.get('role')
+    const managerId = searchParams.get('managerId')
 
     let whereClause: any = {}
     
@@ -32,6 +33,10 @@ export async function GET(request: NextRequest) {
     
     if (role) {
       whereClause.role = role
+    }
+
+    if (managerId) {
+      whereClause.reportingManagerId = managerId
     }
 
     const users = await db.user.findMany({
