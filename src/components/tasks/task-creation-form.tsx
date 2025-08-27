@@ -63,11 +63,13 @@ export function TaskCreationForm({ onTaskCreated }: { onTaskCreated: () => void 
   const [error, setError] = useState('')
 
   // Get current user from auth context
-  const currentUserId = user?.id || "user-1"
-  const currentUserRole = user?.role || "MANAGER"
-  const workspaceId = user?.workspaceId || "workspace-1"
+  const currentUserId = user?.id
+  const currentUserRole = user?.role
+  const workspaceId = user?.workspaceId
 
   const fetchUsers = async () => {
+    if (!workspaceId || !currentUserId || !currentUserRole) return
+
     try {
       let url = `/api/users?workspaceId=${workspaceId}`
       if (currentUserRole === 'MANAGER') {
@@ -86,7 +88,19 @@ export function TaskCreationForm({ onTaskCreated }: { onTaskCreated: () => void 
 
   useEffect(() => {
     fetchUsers()
-  }, [workspaceId])
+  }, [workspaceId, currentUserId, currentUserRole])
+
+  if (!user) {
+    return (
+      <Card className="max-w-2xl mx-auto">
+        <CardContent className="pt-6">
+          <div className="text-center">
+            <p>Loading user information...</p>
+          </div>
+        </CardContent>
+      </Card>
+    )
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
