@@ -69,10 +69,13 @@ export function TaskCreationForm({ onTaskCreated }: { onTaskCreated: () => void 
 
   const fetchUsers = async () => {
     try {
+      // For task assignment, we want to show all users in the workspace
+      // Managers can assign tasks to any employee or manager
+      // Admins can assign tasks to anyone
       let url = `/api/users?workspaceId=${workspaceId}`
-      if (currentUserRole === 'MANAGER') {
-        url += `&managerId=${currentUserId}`
-      }
+      
+      // Only filter by role if needed - for now, show all users
+      // This allows managers to assign tasks to any employee or manager in the workspace
       const response = await fetch(url)
       const result = await response.json()
       

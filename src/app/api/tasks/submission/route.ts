@@ -8,10 +8,7 @@ export async function POST(request: NextRequest) {
       taskId,
       userId,
       report,
-      fileUrl,
-      basePoints,
-      qualityPoints,
-      bonusPoints
+      fileUrl
     } = body
 
     if (!taskId || !userId || !report) {
@@ -57,9 +54,9 @@ export async function POST(request: NextRequest) {
         userId: userId,
         report: report,
         fileUrl: fileUrl || null,
-        basePoints: basePoints || 0,
-        qualityPoints: qualityPoints || 0,
-        bonusPoints: bonusPoints || 0,
+        basePoints: 0, // Will be calculated during review
+        qualityPoints: 0, // Will be assigned during review
+        bonusPoints: 0, // Will be assigned during review
         status: 'pending_review'
       },
       include: {
@@ -92,7 +89,7 @@ export async function POST(request: NextRequest) {
       })
     }
 
-    // Calculate total points
+    // Calculate total points (will be 0 until reviewed)
     const totalPoints = (submission.basePoints || 0) + 
                        (submission.qualityPoints || 0) + 
                        (submission.bonusPoints || 0)

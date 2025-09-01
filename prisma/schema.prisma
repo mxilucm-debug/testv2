@@ -96,6 +96,7 @@ model User {
   departmentId          String?
   designationId         String?
   reportingManagerId    String?
+  adminOverseerId       String?
   workLocation          String?
   employmentType        EmploymentType?
   employmentStatus      EmploymentStatus  @default(ACTIVE)
@@ -115,6 +116,8 @@ model User {
   designation           Designation?      @relation(fields: [designationId], references: [id])
   reportingManager      User?            @relation("ManagerReports", fields: [reportingManagerId], references: [id])
   reportees             User[]           @relation("ManagerReports")
+  adminOverseer         User?            @relation("AdminOverseer", fields: [adminOverseerId], references: [id])
+  overseenUsers         User[]           @relation("AdminOverseer")
   statutoryInfo         StatutoryInfo?
   payrollInfo           PayrollInfo?
   educationalBackground EducationalBackground[]

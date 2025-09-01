@@ -56,6 +56,8 @@ interface User {
   }
   contactNumber?: string
   dateOfJoining?: string
+  reportingManagerId?: string
+  adminOverseerId?: string
   employmentStatus: "ACTIVE" | "INACTIVE" | "ON_LEAVE" | "TERMINATED" | "RESIGNED"
   isActive: boolean
   createdAt: string
@@ -87,6 +89,7 @@ const createUserSchema = z.object({
   departmentId: z.string().optional(),
   designationId: z.string().optional(),
   reportingManagerId: z.string().optional(),
+  adminOverseerId: z.string().optional(),
   contactNumber: z.string().optional(),
   dateOfJoining: z.string().optional(),
 })
@@ -99,6 +102,7 @@ export function TeamManagement() {
   const [departments, setDepartments] = useState<Department[]>([])
   const [designations, setDesignations] = useState<Designation[]>([])
   const [managers, setManagers] = useState<User[]>([])
+  const [admins, setAdmins] = useState<User[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
   const [roleFilter, setRoleFilter] = useState<string>("all")
@@ -175,6 +179,19 @@ export function TeamManagement() {
     }
   }
 
+  // Fetch admins for selected workspace
+  const fetchAdmins = async (workspaceId: string) => {
+    try {
+      const response = await fetch(`/api/users?workspaceId=${workspaceId}&role=ADMIN`)
+      const result = await response.json()
+      if (result.success) {
+        setAdmins(result.data)
+      }
+    } catch (error) {
+      console.error('Error fetching admins:', error)
+    }
+  }
+
   // Fetch designations for selected workspace
   const fetchDesignations = async (workspaceId: string) => {
     try {
@@ -204,6 +221,7 @@ export function TeamManagement() {
       fetchDepartments(selectedWorkspaceId)
       fetchDesignations(selectedWorkspaceId)
       fetchManagers(selectedWorkspaceId)
+      fetchAdmins(selectedWorkspaceId)
     }
   }, [selectedWorkspaceId])
 
@@ -491,20 +509,37 @@ export function TeamManagement() {
                 </div>
               </div>
 
-              <div>
-                <Label htmlFor="reportingManagerId">Reporting Manager</Label>
-                <Select onValueChange={(value) => setValue("reportingManagerId", value)}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select reporting manager" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {managers.map((manager) => (
-                      <SelectItem key={manager.id} value={manager.id}>
-                        {manager.name} ({manager.role})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <Label htmlFor="reportingManagerId">Reporting Manager</Label>
+                  <Select onValueChange={(value) => setValue("reportingManagerId", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select reporting manager" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {managers.map((manager) => (
+                        <SelectItem key={manager.id} value={manager.id}>
+                          {manager.name} ({manager.role})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div>
+                  <Label htmlFor="adminOverseerId">Admin Overseer</Label>
+                  <Select onValueChange={(value) => setValue("adminOverseerId", value)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select admin overseer" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {admins.map((admin) => (
+                        <SelectItem key={admin.id} value={admin.id}>
+                          {admin.name} ({admin.role})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">
@@ -667,20 +702,37 @@ export function TeamManagement() {
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="edit-reportingManagerId">Reporting Manager</Label>
-                  <Select onValueChange={(value) => setValue("reportingManagerId", value)} defaultValue={editingUser.reportingManagerId}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select reporting manager" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {managers.map((manager) => (
-                        <SelectItem key={manager.id} value={manager.id}>
-                          {manager.name} ({manager.role})
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="edit-reportingManagerId">Reporting Manager</Label>
+                    <Select onValueChange={(value) => setValue("reportingManagerId", value)} defaultValue={editingUser.reportingManagerId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select reporting manager" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {managers.map((manager) => (
+                          <SelectItem key={manager.id} value={manager.id}>
+                            {manager.name} ({manager.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <Label htmlFor="edit-adminOverseerId">Admin Overseer</Label>
+                    <Select onValueChange={(value) => setValue("adminOverseerId", value)} defaultValue={editingUser.adminOverseerId}>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select admin overseer" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {admins.map((admin) => (
+                          <SelectItem key={admin.id} value={admin.id}>
+                            {admin.name} ({admin.role})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-4">

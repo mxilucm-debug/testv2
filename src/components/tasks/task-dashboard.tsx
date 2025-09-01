@@ -9,6 +9,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TaskCreationForm } from "./task-creation-form"
 import { TaskManagementNew } from "./task-management-new"
 import { TaskSubmissionForm } from "./task-submission-form"
+import { TaskReviewSystem } from "./task-review-system"
+import { PerformanceDashboard } from "./performance-dashboard"
 import { 
   CheckSquare, 
   Plus, 
@@ -18,7 +20,9 @@ import {
   Clock, 
   AlertTriangle,
   CheckCircle,
-  Target
+  Target,
+  Eye,
+  BarChart3
 } from "lucide-react"
 
 interface TaskStats {
@@ -148,7 +152,7 @@ export function TaskDashboard() {
 
       {/* Main Content Tabs */}
       <Tabs defaultValue="management" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-3">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger value="management" className="flex items-center gap-2">
             <List className="h-4 w-4" />
             Task Management
@@ -160,6 +164,14 @@ export function TaskDashboard() {
           <TabsTrigger value="submission" className="flex items-center gap-2">
             <Upload className="h-4 w-4" />
             Submit Task
+          </TabsTrigger>
+          <TabsTrigger value="review" className="flex items-center gap-2">
+            <Eye className="h-4 w-4" />
+            Review Tasks
+          </TabsTrigger>
+          <TabsTrigger value="performance" className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4" />
+            Performance
           </TabsTrigger>
         </TabsList>
 
@@ -173,6 +185,14 @@ export function TaskDashboard() {
 
         <TabsContent value="submission" className="space-y-4">
           <TaskSubmissionForm onSubmission={fetchTaskStats} />
+        </TabsContent>
+
+        <TabsContent value="review" className="space-y-4">
+          <TaskReviewSystem />
+        </TabsContent>
+
+        <TabsContent value="performance" className="space-y-4">
+          <PerformanceDashboard />
         </TabsContent>
       </Tabs>
     </div>

@@ -49,6 +49,7 @@ export async function GET(request: NextRequest) {
     const workspaceId = searchParams.get('workspaceId')
     const status = searchParams.get('status')
     const leaveTypeId = searchParams.get('leaveTypeId')
+    const managerId = searchParams.get('managerId')
     const page = parseInt(searchParams.get('page') || '1')
     const limit = parseInt(searchParams.get('limit') || '10')
 
@@ -70,6 +71,13 @@ export async function GET(request: NextRequest) {
 
     if (leaveTypeId) {
       where.leaveTypeId = leaveTypeId
+    }
+
+    if (managerId) {
+      where.user = {
+        ...where.user,
+        reportingManagerId: managerId
+      }
     }
 
     const [leaveRequests, total] = await Promise.all([

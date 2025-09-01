@@ -44,9 +44,6 @@ interface TaskSubmission {
   taskId: string
   report: string
   fileUrl?: string
-  basePoints: number
-  qualityPoints: number
-  bonusPoints: number
 }
 
 export function TaskSubmissionForm({ onSubmission }: { onSubmission: () => void }) {
@@ -55,10 +52,7 @@ export function TaskSubmissionForm({ onSubmission }: { onSubmission: () => void 
   const [submission, setSubmission] = useState<TaskSubmission>({
     taskId: '',
     report: '',
-    fileUrl: '',
-    basePoints: 0,
-    qualityPoints: 0,
-    bonusPoints: 0
+    fileUrl: ''
   })
   const [loading, setLoading] = useState(false)
   const [success, setSuccess] = useState(false)
@@ -128,10 +122,7 @@ export function TaskSubmissionForm({ onSubmission }: { onSubmission: () => void 
         setSubmission({
           taskId: '',
           report: '',
-          fileUrl: '',
-          basePoints: 0,
-          qualityPoints: 0,
-          bonusPoints: 0
+          fileUrl: ''
         })
         setSelectedTask(null)
         setFile(null)
@@ -153,7 +144,8 @@ export function TaskSubmissionForm({ onSubmission }: { onSubmission: () => void 
     setSubmission(prev => ({ ...prev, taskId }))
   }
 
-  const totalPoints = submission.basePoints + submission.qualityPoints + submission.bonusPoints
+  // Points will be calculated during review
+  const totalPoints = 0
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {

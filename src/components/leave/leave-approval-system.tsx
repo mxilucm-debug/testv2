@@ -93,9 +93,10 @@ export function LeaveApprovalSystem() {
   // WebSocket hook for real-time notifications
   const { isConnected, sendLeaveUpdate } = useLeaveSocket(workspaceId)
 
-  // Mock approver ID - in real app, this would come from authentication
-  const approverId = "manager-1"
-  const workspaceId = "workspace-1"
+  // Get current user from auth context - in real app, this would come from authentication
+  const currentUserId = "manager-1" // TODO: Replace with actual auth context
+  const currentUserRole = "MANAGER" // TODO: Replace with actual auth context
+  const workspaceId = "workspace-1" // TODO: Replace with actual auth context
 
   const fetchLeaveRequests = async () => {
     try {
@@ -104,6 +105,11 @@ export function LeaveApprovalSystem() {
       params.append('workspaceId', workspaceId)
       if (filters.status && filters.status !== "all") params.append('status', filters.status)
       if (filters.search) params.append('search', filters.search)
+
+      // If current user is a manager, only show leave requests from their direct reports
+      if (currentUserRole === 'MANAGER') {
+        params.append('managerId', currentUserId)
+      }
 
       const response = await fetch(`/api/leave-requests?${params}`)
       const result = await response.json()
@@ -132,7 +138,7 @@ export function LeaveApprovalSystem() {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          approvedBy: approverId,
+          approvedBy: currentUserId,
           status: approvalData.status,
           remarks: approvalData.remarks
         }),
